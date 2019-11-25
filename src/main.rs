@@ -18,7 +18,7 @@ use ini::Ini;
 fn get_config_file_path() -> String {
     dirs::config_dir()
         .unwrap()
-        .join("trb.ini")
+        .join("tnb.ini")
         .to_str()
         .unwrap()
         .to_string()
@@ -44,7 +44,7 @@ fn create_new_config_file() {
             println!("{}", get_config_file_path());
             println!("Better check it out!");
             },
-        Err(_) => println!("Whoopsie")
+        Err(e) =>{ println!("An error occured while creating the config file:"); println!("{}", e) }
     }
 }
 
