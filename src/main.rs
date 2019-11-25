@@ -31,13 +31,6 @@ fn create_new_config_file() {
         .set("bot_id", "BOT ID HERE")
         .set("target_chat_id", "TARGET CHAT ID HERE");
 
-    // match create_dir_all(get_config_dir()) {
-    //     Ok(_) => None,
-    //     Err(_) => {
-    //         println!("Error occured while creating the config file:");
-    //         // println!("{}", err);
-    //     }
-    // };
 
     match conf.write_to_file(get_config_file_path()) {
         Ok(_) => {
@@ -84,39 +77,23 @@ impl Bot {
 
             Err(_err) => Err(()),
         }
-
-        // Ok(("gowno", "gowno"))
-        // Err("asda");
     }
 
     fn send_message(&self, text: String) {
-        // let mut params = HashMap::new();
 
-        // params.insert("chat_id", self.chat_id.as_str());
-        // params.insert("text", text.as_str());
-
-        let mut resp = ureq::post(self.url.as_str())
+        let resp = ureq::post(self.url.as_str())
         .set("Content-Type", "application/json")
         .send_json(json!({
             "chat_id": self.chat_id.as_str(),
             "text": text.as_str()
-            }));//.call();
-            // .set("chat_id", self.chat_id.as_str())
-            // .set("text", text.as_str())
-        // let r = resp.call();
-
-        println!("{}", resp.into_string().unwrap());
-        // if resp.
-        // println!(resp)
-
-        /*
-        let mut _response = self
-            .client
-            .post(self.url.as_str())
-            .form(&params)
-            .send()
-            .unwrap();
-        */
+            }));
+            
+        if !resp.ok() {
+            match resp.into_string() {
+                Ok(response) => {println!("{}", response)},
+                Err(err) => println!("{}", err)
+            }
+        }
     }
 
     fn read_from_stdin(&self) {
