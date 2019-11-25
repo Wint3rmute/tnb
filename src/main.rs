@@ -1,5 +1,6 @@
 // Web requests
-use std::collections::HashMap;
+#[macro_use]
+extern crate ureq;
 
 // Path related
 // use std::fs::create_dir_all;
@@ -43,13 +44,15 @@ fn create_new_config_file() {
             println!("Created a new config file in:");
             println!("{}", get_config_file_path());
             println!("Better check it out!");
-            },
-        Err(e) =>{ println!("An error occured while creating the config file:"); println!("{}", e) }
+        }
+        Err(e) => {
+            println!("An error occured while creating the config file:");
+            println!("{}", e)
+        }
     }
 }
 
 struct Bot {
-    client: reqwest::Client,
     chat_id: String,
     url: String,
 }
@@ -57,7 +60,6 @@ struct Bot {
 impl Bot {
     fn new(bot_id: String, chat_id: String) -> Bot {
         Bot {
-            client: reqwest::Client::new(),
             chat_id: chat_id,
             url: [
                 "https://api.telegram.org/bot",
@@ -88,17 +90,33 @@ impl Bot {
     }
 
     fn send_message(&self, text: String) {
-        let mut params = HashMap::new();
+        // let mut params = HashMap::new();
 
-        params.insert("chat_id", self.chat_id.as_str());
-        params.insert("text", text.as_str());
+        // params.insert("chat_id", self.chat_id.as_str());
+        // params.insert("text", text.as_str());
 
+        let mut resp = ureq::post(self.url.as_str())
+        .set("Content-Type", "application/json")
+        .send_json(json!({
+            "chat_id": self.chat_id.as_str(),
+            "text": text.as_str()
+            }));//.call();
+            // .set("chat_id", self.chat_id.as_str())
+            // .set("text", text.as_str())
+        // let r = resp.call();
+
+        println!("{}", resp.into_string().unwrap());
+        // if resp.
+        // println!(resp)
+
+        /*
         let mut _response = self
             .client
             .post(self.url.as_str())
             .form(&params)
             .send()
             .unwrap();
+        */
     }
 
     fn read_from_stdin(&self) {
@@ -120,4 +138,3 @@ fn main() {
         }
     };
 }
-
