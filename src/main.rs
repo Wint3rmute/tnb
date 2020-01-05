@@ -10,6 +10,8 @@ extern crate dirs;
 // Config file
 extern crate ini;
 use ini::Ini;
+use std::io::prelude::*;
+use std::fs::File;
 
 // fn get_config_dir() -> String {
 //     dirs::config_dir().unwrap().to_str().unwrap().to_string()
@@ -31,8 +33,15 @@ fn create_new_config_file() {
         .set("bot_id", "BOT ID HERE")
         .set("target_chat_id", "TARGET CHAT ID HERE");
 
+    
+    let mut output = File::create(get_config_file_path()).unwrap();
 
-    match conf.write_to_file(get_config_file_path()) {
+
+    // Todo: handle
+    output.write_all(b"# Warning: Do not share this config file\n").unwrap();
+    output.write_all(b"# The token will allow anyone to control your bot!\n\n").unwrap();
+
+    match conf.write_to(&mut output) {
         Ok(_) => {
             println!("Created a new config file in:");
             println!("{}", get_config_file_path());
