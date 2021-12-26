@@ -1,6 +1,6 @@
 # Maintainer: wint3rmute <mateusz.baczek1998@gmail.com>
 pkgname=tnb
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 makedepends=('rust' 'cargo')
 arch=('i686' 'x86_64' 'armv6h' 'armv7h')
