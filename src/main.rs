@@ -10,8 +10,8 @@ extern crate dirs;
 // Config file
 extern crate ini;
 use ini::Ini;
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::prelude::*;
 
 // fn get_config_dir() -> String {
 //     dirs::config_dir().unwrap().to_str().unwrap().to_string()
@@ -33,13 +33,15 @@ fn create_new_config_file() {
         .set("bot_id", "BOT ID HERE")
         .set("target_chat_id", "TARGET CHAT ID HERE");
 
-    
     let mut output = File::create(get_config_file_path()).unwrap();
 
-
     // Todo: handle
-    output.write_all(b"# Warning: Do not share this config file\n").unwrap();
-    output.write_all(b"# The token will allow anyone to control your bot!\n\n").unwrap();
+    output
+        .write_all(b"# Warning: Do not share this config file\n")
+        .unwrap();
+    output
+        .write_all(b"# The token will allow anyone to control your bot!\n\n")
+        .unwrap();
 
     match conf.write_to(&mut output) {
         Ok(_) => {
@@ -89,18 +91,19 @@ impl Bot {
     }
 
     fn send_message(&self, text: String) {
-
         let resp = ureq::post(self.url.as_str())
-        .set("Content-Type", "application/json")
-        .send_json(json!({
+            .set("Content-Type", "application/json")
+            .send_json(json!({
             "chat_id": self.chat_id.as_str(),
             "text": text.as_str()
             }));
-            
+
         if !resp.ok() {
             match resp.into_string() {
-                Ok(response) => {println!("{}", response)},
-                Err(err) => println!("{}", err)
+                Ok(response) => {
+                    println!("{}", response)
+                }
+                Err(err) => println!("{}", err),
             }
         }
     }
