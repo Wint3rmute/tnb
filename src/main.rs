@@ -91,19 +91,15 @@ impl Bot {
     }
 
     fn send_message(&self, text: String) {
-        let resp = ureq::post(self.url.as_str())
+        match ureq::post(self.url.as_str())
             .set("Content-Type", "application/json")
             .send_json(json!({
             "chat_id": self.chat_id.as_str(),
             "text": text.as_str()
-            }));
-
-        if !resp.ok() {
-            match resp.into_string() {
-                Ok(response) => {
-                    println!("{}", response)
-                }
-                Err(err) => println!("{}", err),
+            })) {
+            Ok(_response) => {}
+            Err(error) => {
+                eprintln!("{}", error);
             }
         }
     }
