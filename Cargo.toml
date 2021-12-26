@@ -2,7 +2,7 @@
 name = "tnb"
 version = "0.1.0"
 authors = ["wint3rmute <mateusz.baczek1998@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "command | tnb - pipe your commands to your Telegram Notifications Bot"
 license = "WTFPL"
 
