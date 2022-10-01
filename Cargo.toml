@@ -12,7 +12,8 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ureq = { version = "2.4.0", features = ["tls", "json"] }
+ureq = { version = "2.4.0", features = ["tls"] }
+miniserde = "0.1.27"
 rust-ini = "0.18"
 dirs = "4.0.0"
 

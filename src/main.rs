@@ -1,5 +1,3 @@
-// Web requests
-#[macro_use]
 extern crate ureq;
 
 use std::io::{self, BufRead};
@@ -8,6 +6,7 @@ extern crate dirs;
 // Config file
 extern crate ini;
 use ini::Ini;
+use miniserde::{json, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -55,6 +54,12 @@ struct Bot {
     url: String,
 }
 
+#[derive(Serialize, Debug)]
+struct SendMessageRequestBody {
+    chat_id: usize,
+    text: String,
+}
+
 impl Bot {
     fn new(token: String, chat_id: String) -> Bot {
         Bot {
@@ -87,9 +92,9 @@ impl Bot {
     fn send_message(&self, text: String) {
         match ureq::post(self.url.as_str())
             .set("Content-Type", "application/json")
-            .send_json(json!({
-            "chat_id": self.chat_id.as_str(),
-            "text": text.as_str()
+            .send_string(&json::to_string(&SendMessageRequestBody {
+                chat_id: self.chat_id.parse().unwrap(),
+                text,
             })) {
             Ok(_response) => {}
             Err(error) => {
