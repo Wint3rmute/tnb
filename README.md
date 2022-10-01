@@ -24,7 +24,7 @@ Run `tnb` after installation to create a config file
 ```bash
 $ tnb
 Created a new config file in:
-/home/wint3rmute/.config/tnb.ini
+/home/wint3rmute/.config/tnb.conf
 ```
 
 You'll have to fill the `token` and `chat_id` fields in the configuration file for your bot to work.
