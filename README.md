@@ -27,7 +27,7 @@ Created a new config file in:
 /home/wint3rmute/.config/tnb.ini
 ```
 
-You'll have to fill the `bot_id` and `target_chat_id` fields in the configuration file for your bot to work
+You'll have to fill the `token` and `chat_id` fields in the configuration file for your bot to work.
 
 ### Bot token
 
