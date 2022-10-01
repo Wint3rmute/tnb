@@ -64,7 +64,7 @@ struct Bot {
 impl Bot {
     fn new(bot_id: String, chat_id: String) -> Bot {
         Bot {
-            chat_id: chat_id,
+            chat_id,
             url: [
                 "https://api.telegram.org/bot",
                 bot_id.as_str(),
