@@ -13,6 +13,5 @@ readme = "README.md"
 
 [dependencies]
 ureq = { version = "2.4.0", features = ["tls", "json"] }
-rust-ini = "0.17"
+rust-ini = "0.18"
 dirs = "4.0.0"
-
