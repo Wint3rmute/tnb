@@ -5,58 +5,54 @@ extern crate ureq;
 use std::io::{self, BufRead};
 extern crate dirs;
 
-// Config file
-extern crate ini;
-use ini::Ini;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::Path;
+
+static DEFAULT_CONFIG_FILE: &[u8] = b"# Warning: do not share this config file\n\
+# The token will allow anyone to control your bot!\n\
+TNB_TOKEN=\"BOT TOKEN HERE\" # Edit\n\
+TNB_CHAT_ID=0 # Edit\n\
+";
 
 // TODO: make those weird things shorter
 fn get_config_file_path() -> String {
     dirs::config_dir()
-        .unwrap()
-        .join("tnb.ini")
+        .expect("Unable to find a config directory. Is your OS supported?")
+        .join("tnb.conf")
         .to_str()
-        .unwrap()
+        .expect("Config file path is not a valid utf-8 path!")
         .to_string()
 }
 
-fn create_new_config_file() {
-    let mut conf = Ini::new();
-    conf.with_section(Some("Bot".to_owned()))
-        .set("token", "BOT TOKEN HERE")
-        .set("chat_id", "TARGET CHAT ID HERE");
+enum ConfigFileCreationStatus {
+    AlreadyExists,
+    Created,
+}
 
-    let mut output = File::create(get_config_file_path()).unwrap();
+fn create_new_config_file() -> ConfigFileCreationStatus {
+    let config_file_path = get_config_file_path();
 
-    // Todo: handle
-    output
-        .write_all(b"# Warning: Do not share this config file\n")
-        .unwrap();
-    output
-        .write_all(b"# The token will allow anyone to control your bot!\n\n")
-        .unwrap();
+    if Path::new(&config_file_path).exists() {
+        ConfigFileCreationStatus::AlreadyExists
+    } else {
+        println!("Creating a new config file");
+        File::create(config_file_path.as_str())
+            .unwrap_or_else(|_| panic!("Cannot create file {config_file_path}"))
+            .write_all(DEFAULT_CONFIG_FILE)
+            .unwrap_or_else(|_| panic!("Cannot write sample config to {config_file_path}"));
 
-    match conf.write_to(&mut output) {
-        Ok(_) => {
-            println!("Created a new config file in:");
-            println!("{}", get_config_file_path());
-            println!("Better check it out!");
-        }
-        Err(e) => {
-            println!("An error occured while creating the config file:");
-            println!("{}", e)
-        }
+        ConfigFileCreationStatus::Created
     }
 }
 
 struct Bot {
-    chat_id: String,
+    chat_id: u32,
     url: String,
 }
 
 impl Bot {
-    fn new(token: String, chat_id: String) -> Bot {
+    fn new(token: String, chat_id: u32) -> Self {
         Bot {
             chat_id,
             url: [
@@ -68,27 +64,28 @@ impl Bot {
         }
     }
 
-    fn from_init_file() -> Result<Bot, ()> {
-        let conf = Ini::load_from_file(get_config_file_path());
-
-        match conf {
-            Ok(conf) => {
-                let section = conf.section(Some("Bot".to_owned())).unwrap();
-                let token = section.get("token").unwrap();
-                let chat_id = section.get("chat_id").unwrap();
-
-                Ok(Bot::new(token.to_string(), chat_id.to_string()))
+    fn from_config_file() -> Self {
+        let config_path = get_config_file_path();
+        match dotenv::from_filename(config_path) {
+            Ok(_) => {}
+            Err(e) => {
+                panic!("Unable to read configuration file: {e}");
             }
-
-            Err(_err) => Err(()),
         }
+        let token = std::env::var("TNB_TOKEN").expect("TNB_TOKEN not found in config file");
+        let chat_id: u32 = std::env::var("TNB_CHAT_ID")
+            .expect("TNB_CHAT_ID not found in config file")
+            .parse()
+            .expect("Unable to parse TNB_CHAT_ID");
+
+        Bot::new(token, chat_id)
     }
 
     fn send_message(&self, text: String) {
         match ureq::post(self.url.as_str())
             .set("Content-Type", "application/json")
             .send_json(json!({
-            "chat_id": self.chat_id.as_str(),
+            "chat_id": self.chat_id,
             "text": text.as_str()
             })) {
             Ok(_response) => {}
@@ -108,12 +105,8 @@ impl Bot {
 }
 
 fn main() {
-    match Bot::from_init_file() {
-        Ok(bot) => {
-            bot.read_from_stdin();
-        }
-        Err(()) => {
-            create_new_config_file();
-        }
-    };
+    match create_new_config_file() {
+        ConfigFileCreationStatus::AlreadyExists => Bot::from_config_file().read_from_stdin(),
+        ConfigFileCreationStatus::Created => {}
+    }
 }
