@@ -1,88 +1,89 @@
-// Web requests
 #[macro_use]
 extern crate ureq;
 
 use std::io::{self, BufRead};
 extern crate dirs;
 
-use std::fs::File;
-use std::io::prelude::*;
+use serde::{Deserialize, Serialize};
+use std::fs;
 use std::path::Path;
-
-static DEFAULT_CONFIG_FILE: &[u8] = b"# Warning: do not share this config file\n\
-# The token will allow anyone to control your bot!\n\
-TNB_TOKEN=\"BOT TOKEN HERE\" # Edit\n\
-TNB_CHAT_ID=0 # Edit\n\
-";
-
-// TODO: make those weird things shorter
-fn get_config_file_path() -> String {
-    dirs::config_dir()
-        .expect("Unable to find a config directory. Is your OS supported?")
-        .join("tnb.conf")
-        .to_str()
-        .expect("Config file path is not a valid utf-8 path!")
-        .to_string()
-}
 
 enum ConfigFileCreationStatus {
     AlreadyExists,
     Created,
 }
 
-fn create_new_config_file() -> ConfigFileCreationStatus {
-    let config_file_path = get_config_file_path();
+#[derive(Serialize, Deserialize)]
+struct ConfigurationFile {
+    chat_id: u32,
+    token: String,
+}
 
-    if Path::new(&config_file_path).exists() {
-        ConfigFileCreationStatus::AlreadyExists
-    } else {
-        println!("Creating a new config file");
-        File::create(config_file_path.as_str())
-            .unwrap_or_else(|_| panic!("Cannot create file {config_file_path}"))
-            .write_all(DEFAULT_CONFIG_FILE)
-            .unwrap_or_else(|_| panic!("Cannot write sample config to {config_file_path}"));
+impl ConfigurationFile {
+    fn get_path() -> String {
+        dirs::config_dir()
+            .expect("Unable to find a config directory. Is your OS supported?")
+            .join("tnb.json")
+            .to_str()
+            .expect("Config file path is not a valid utf-8 path!")
+            .to_string()
+    }
+
+    fn create_new() -> ConfigFileCreationStatus {
+        let config_file_path = Self::get_path();
+
+        if Path::new(&config_file_path).exists() {
+            return ConfigFileCreationStatus::AlreadyExists;
+        }
+
+        println!("Creating a new config file at {config_file_path}");
+        let default_configuration = serde_json::to_string(&ConfigurationFile {
+                    chat_id: 0,
+                    token: String::from("Go talk with @BotFather"),
+                })
+                .unwrap_or_else(|error| {
+                    panic!("Unable to write sample config file, but this is most probably developer's fault: {error}")
+                });
+
+        fs::write(config_file_path.as_str(), default_configuration.as_bytes()).unwrap_or_else(
+            |error| panic!("Cannot write sample config to {config_file_path}: {error}"),
+        );
 
         ConfigFileCreationStatus::Created
+    }
+
+    fn load() -> Self {
+        let config_path = Self::get_path();
+
+        let contents = fs::read_to_string(config_path)
+            .unwrap_or_else(|error| panic!("Unable to read the configuration file: {error}"));
+
+        serde_json::from_str(contents.as_str())
+            .unwrap_or_else(|error| panic!("Unable to parse the configuration file: {error}"))
     }
 }
 
 struct Bot {
     chat_id: u32,
-    url: String,
+    send_message_endpoint: String,
 }
 
 impl Bot {
-    fn new(token: String, chat_id: u32) -> Self {
+    fn from_configuration_file() -> Self {
+        let configuration = ConfigurationFile::load();
         Bot {
-            chat_id,
-            url: [
+            chat_id: configuration.chat_id,
+            send_message_endpoint: [
                 "https://api.telegram.org/bot",
-                token.as_str(),
+                configuration.token.as_str(),
                 "/sendMessage",
             ]
             .join(""),
         }
     }
 
-    fn from_config_file() -> Self {
-        let config_path = get_config_file_path();
-        match dotenv::from_filename(config_path) {
-            Ok(_) => {}
-            Err(e) => {
-                panic!("Unable to read configuration file: {e}");
-            }
-        }
-        let token = std::env::var("TNB_TOKEN").expect("TNB_TOKEN not found in config file");
-        let chat_id: u32 = std::env::var("TNB_CHAT_ID")
-            .expect("TNB_CHAT_ID not found in config file")
-            .parse()
-            .expect("Unable to parse TNB_CHAT_ID");
-
-        Bot::new(token, chat_id)
-    }
-
     fn send_message(&self, text: String) {
-        match ureq::post(self.url.as_str())
+        match ureq::post(self.send_message_endpoint.as_str())
             .set("Content-Type", "application/json")
             .send_json(json!({
             "chat_id": self.chat_id,
@@ -95,7 +96,7 @@ impl Bot {
         }
     }
 
-    fn read_from_stdin(&self) {
+    fn forward_from_stdin(&self) {
         let stdin = io::stdin();
 
         for line in stdin.lock().lines() {
@@ -105,8 +106,10 @@ impl Bot {
 }
 
 fn main() {
-    match create_new_config_file() {
-        ConfigFileCreationStatus::AlreadyExists => Bot::from_config_file().read_from_stdin(),
+    match ConfigurationFile::create_new() {
         ConfigFileCreationStatus::Created => {}
+        ConfigFileCreationStatus::AlreadyExists => {
+            Bot::from_configuration_file().forward_from_stdin();
+        }
     }
 }
