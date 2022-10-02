@@ -1,6 +1,6 @@
 [package]
 name = "tnb"
-version = "1.0.0"
+version = "2.0.0"
 authors = ["wint3rmute <mateusz.baczek1998@gmail.com>"]
 edition = "2021"
 description = "command | tnb - pipe your commands to your Telegram Notifications Bot"
@@ -12,9 +12,10 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
 ureq = { version = "2.4.0", features = ["tls", "json"] }
 dirs = "4.0.0"
-dotenv = "0.15.0"
+serde_json = "1.0.85"
 
 [profile.release]
 opt-level = 'z'
