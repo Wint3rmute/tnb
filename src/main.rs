@@ -91,7 +91,7 @@ impl Bot {
             })) {
             Ok(_response) => {}
             Err(error) => {
-                eprintln!("{}", error);
+                eprintln!("{error}");
             }
         }
     }
