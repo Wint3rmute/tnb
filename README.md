@@ -2,6 +2,8 @@
 
 [![dependency status](https://deps.rs/repo/github/wint3rmute/tnb/status.svg)](https://deps.rs/repo/github/wint3rmute/tnb)
 ![CI status](https://github.com/wint3rmute/tnb/actions/workflows/build.yml/badge.svg)
+![AUR last modified](https://img.shields.io/aur/last-modified/tnb?label=Last%20AUR%20update)
+![GitHub tag (with filter)](https://img.shields.io/github/v/tag/wint3rmute/tnb?label=Latest%20version)
 
 ## Usage
 
