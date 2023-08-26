@@ -8,6 +8,9 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+const REPOSITORY_ADDRESS: &str = env!("CARGO_PKG_REPOSITORY");
+
 enum ConfigFileCreationStatus {
     AlreadyExists,
     Created,
@@ -106,6 +109,23 @@ impl Bot {
 }
 
 fn main() {
+    if std::env::args().len() > 1 {
+        println!("tnb - Telegram Notification Bot, version {VERSION}");
+        println!();
+
+        println!("This program is meant to be run without any arguments/flags and take input from stdin or a pipe.");
+
+        let conf_file_path = ConfigurationFile::get_path();
+        println!("If you're having issues with sending messages, verify your configuration file: {conf_file_path}");
+        println!();
+
+        println!("For more help, refer to project's README.md: {REPOSITORY_ADDRESS}");
+        println!();
+        println!("Have a peaceful day!");
+
+        std::process::exit(1);
+    }
+
     match ConfigurationFile::create_new() {
         ConfigFileCreationStatus::Created => {}
         ConfigFileCreationStatus::AlreadyExists => {
