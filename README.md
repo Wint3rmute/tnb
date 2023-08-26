@@ -1,6 +1,7 @@
 # `tnb` - Telegram Notification Bot
 
 [![dependency status](https://deps.rs/repo/github/wint3rmute/tnb/status.svg)](https://deps.rs/repo/github/wint3rmute/tnb)
+![CI status](https://github.com/wint3rmute/tnb/actions/workflows/build.yml/badge.svg)
 
 ## Usage
 
