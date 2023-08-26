@@ -1,5 +1,7 @@
 # `tnb` - Telegram Notification Bot
 
+[![dependency status](https://deps.rs/repo/github/wint3rmute/tnb/status.svg)](https://deps.rs/repo/github/wint3rmute/tnb)
+
 ## Usage
 
 `$ some_command | tnb` - will send the output of the command to your [Telegram](https://telegram.org/) conversation of choice.
