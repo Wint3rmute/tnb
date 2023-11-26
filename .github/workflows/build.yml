@@ -33,3 +33,9 @@ jobs:
       - name: Build
         run: |
           cargo test --workspace
+
+  security_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/audit-check@v1
