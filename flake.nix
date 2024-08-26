@@ -3,44 +3,52 @@
 
   # Define the inputs of the flake
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";  # Use NixOS's package set
-    flake-utils.url = "github:numtide/flake-utils";  # Utility functions for flakes
-    rust-overlay.url = "github:oxalica/rust-overlay";  # Rust overlay for latest Rust toolchains
+    nixpkgs.url = "github:NixOS/nixpkgs"; # Use NixOS's package set
+    flake-utils.url = "github:numtide/flake-utils"; # Utility functions for flakes
+    # rust-overlay.url = "github:oxalica/rust-overlay";  # Rust overlay for latest Rust toolchains
   };
 
-  outputs = { self, nixpkgs, flake-utils, rust-overlay }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+  }:
+    flake-utils.lib.eachDefaultSystem (
+      system: let
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ rust-overlay.overlay ];  # Add Rust overlay to Nixpkgs
+          # overlays = [ pkgs.cargo ];  # Add Rust overlay to Nixpkgs
         };
-      in
-      {
+
+        # Read Cargo.toml and extract name and version
+        cargoInfo = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+        pname = cargoInfo.package.name;
+        version = cargoInfo.package.version;
+      in {
         # Define a Nix package for your Rust application
         packages.default = pkgs.rustPlatform.buildRustPackage {
-          pname = "my-rust-app";  # Change to your application's name
-          version = "1.0.0";      # Set your app's version
+          pname = pname; # Change to your application's name
+          version = version; # Set your app's version
 
           src = self;
 
           cargoLock = {
-            lockFile = ./Cargo.lock;  # Path to your Cargo.lock file
+            lockFile = ./Cargo.lock; # Path to your Cargo.lock file
           };
 
-          cargoToml = ./Cargo.toml;   # Path to your Cargo.toml file
+          cargoToml = ./Cargo.toml; # Path to your Cargo.toml file
 
           meta = with pkgs.lib; {
             description = "A Rust application for NixOS";
-            license = licenses.mit;  # Change to your app's license
-            maintainers = [ maintainers.yourGithubHandle ];  # Replace with your GitHub handle
+            license = licenses.mit; # Change to your app's license
+            maintainers = [maintainers.yourGithubHandle]; # Replace with your GitHub handle
           };
         };
 
         # Define how to run the application
         apps.default = {
           type = "app";
-          program = "${self.packages.${system}.default}/bin/my-rust-app";
+          program = "${self.packages.${system}.default}/bin/tnb";
         };
 
         # DevShell for development with Rust
@@ -48,6 +56,7 @@
           buildInputs = [
             pkgs.rustc
             pkgs.cargo
+            pkgs.alejandra
           ];
         };
       }
