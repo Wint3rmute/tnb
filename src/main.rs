@@ -1,10 +1,10 @@
-#[macro_use]
 extern crate ureq;
 
 use std::io::{self, BufRead};
 extern crate dirs;
 
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::fs;
 use std::path::Path;
 
@@ -87,7 +87,7 @@ impl Bot {
 
     fn send_message(&self, text: String) {
         match ureq::post(self.send_message_endpoint.as_str())
-            .set("Content-Type", "application/json")
+            .header("Content-Type", "application/json")
             .send_json(json!({
             "chat_id": self.chat_id,
             "text": text.as_str()
