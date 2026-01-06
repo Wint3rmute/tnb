@@ -1,43 +1,61 @@
 name: Rust CI
-on: [push]
+on: [push, pull_request]
 
 jobs:
   formatting:
+    name: Check formatting
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cargo fmt --check
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --check
 
   build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cargo build --all-targets --all-features --examples --workspace
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build all targets
+        run: cargo build --all-targets --all-features --examples --workspace
 
   clippy:
+    name: Clippy lints
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cargo clippy --all-targets --all-features --examples --workspace
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features --examples --workspace -- -D warnings
 
   test:
+    name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: |
-          cargo test --workspace
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Run tests
+        run: cargo test --workspace
 
   security_audit:
+    name: Security audit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions-rs/audit-check@v1
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions-rust-lang/audit@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          denyWarnings: true
