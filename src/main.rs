@@ -113,10 +113,14 @@ fn main() {
         println!("tnb - Telegram Notification Bot, version {VERSION}");
         println!();
 
-        println!("This program is meant to be run without any arguments/flags and take input from stdin or a pipe.");
+        println!(
+            "This program is meant to be run without any arguments/flags and take input from stdin or a pipe."
+        );
 
         let conf_file_path = ConfigurationFile::get_path();
-        println!("If you're having issues with sending messages, verify your configuration file: {conf_file_path}");
+        println!(
+            "If you're having issues with sending messages, verify your configuration file: {conf_file_path}"
+        );
         println!();
 
         println!("For more help, refer to project's README.md: {REPOSITORY_ADDRESS}");
